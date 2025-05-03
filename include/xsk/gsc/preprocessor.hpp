@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -11,8 +11,9 @@
 namespace xsk::gsc
 {
 
-class preprocessor
+struct preprocessor
 {
+private:
     context* ctx_;
     std::stack<lexer> lexer_;
     std::vector<std::string> includes_;
@@ -29,9 +30,9 @@ class preprocessor
     u32 skip_;
 
 public:
-    preprocessor(context* ctx, std::string const& name, char const* data, usize size);
+    preprocessor(context* ctx, std::string const& name, u8 const* data, usize size);
     auto process() -> token;
-    auto push_header(std::string const& file) -> void;
+    auto push_header(location const& loc, std::string const& file) -> void;
     auto pop_header() -> void;
     auto ban_header(location const& loc) -> void;
 

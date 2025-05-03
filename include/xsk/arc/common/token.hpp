@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -18,7 +18,7 @@ struct token
         DOUBLEDOT, ELLIPSIS, SEMICOLON, DOUBLECOLON, LBRACKET, RBRACKET, LBRACE, RBRACE, LPAREN, RPAREN,
 
         NAME, PATH, STRING, ISTRING, HASHSTR, INT, FLT,
-        
+
         DEVBEGIN, DEVEND, INLINE, INCLUDE, USINGTREE, ANIMTREE, AUTOEXEC, CODECALL, PRIVATE,
         ENDON, NOTIFY, WAIT, WAITREALTIME, WAITTILL, WAITTILLMATCH, WAITTILLFRAMEEND, IF, ELSE,
         DO, WHILE, FOR, FOREACH, IN, SWITCH, CASE, DEFAULT, BREAK, CONTINUE, RETURN, PROFBEGIN,

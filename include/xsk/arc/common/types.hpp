@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -119,9 +119,10 @@ struct locjmp
     std::string cnt;
     std::string brk;
     bool is_dev;
+    bool is_switch;
 };
 
 // fordward decl for modules ref
-class context;
+struct context;
 
 } // namespace xsk::arc

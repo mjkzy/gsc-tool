@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -11,8 +11,8 @@ namespace xsk::gsc
 
 extern std::array<std::pair<opcode, std::string_view>, opcode_count> const opcode_list;
 
-context::context(gsc::props props, gsc::engine engine, gsc::endian endian, gsc::system system, u32 str_count)
-    : props_{ props }, engine_{ engine }, endian_{ endian }, system_{ system }, instance_{ gsc::instance::server }, str_count_{ str_count },
+context::context(gsc::props props, gsc::engine engine, gsc::endian endian, gsc::system system, gsc::instance inst, u32 str_count)
+    : props_{ props }, engine_{ engine }, endian_{ endian }, system_{ system }, instance_{ inst }, str_count_{ str_count },
       source_{ this }, assembler_{ this }, disassembler_{ this }, compiler_{ this }, decompiler_{ this }
 {
     opcode_map_.reserve(opcode_list.size());
@@ -57,7 +57,7 @@ auto context::engine_name() const -> std::string_view
     return "";
 }
 
-auto context::opcode_size(opcode op) const -> u32
+auto context::opcode_size(opcode op) const -> usize
 {
     switch (op)
     {
@@ -369,7 +369,7 @@ auto context::func2_id(std::string const& name) const -> u64
 
     char const* str = name.data();
     u64 hash = 0x79D6530B0BB9B5D1;
-    
+
     while ( *str )
     {
         u8 byte = *str++;
@@ -477,7 +477,7 @@ auto context::meth2_id(std::string const& name) const -> u64
 
     char const* str = name.data();
     u64 hash = 0x79D6530B0BB9B5D1;
-    
+
     while ( *str )
     {
         u8 byte = *str++;
@@ -627,7 +627,7 @@ auto context::hash_id(std::string const& name) const -> u64
 
     char const* str = name.data();
     u64 hash = 0x79D6530B0BB9B5D1;
-    
+
     while ( *str )
     {
         u8 byte = *str++;

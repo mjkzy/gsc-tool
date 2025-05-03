@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -12,15 +12,15 @@ namespace xsk::gsc::s4
 {
 
 constexpr usize code_count = 190;
-constexpr usize func_count = 4;
-constexpr usize meth_count = 0;
-constexpr usize token_count = 0;
+constexpr usize func_count = 116;
+constexpr usize meth_count = 222;
+constexpr usize token_count = 282;
 constexpr u32 max_string_id = 0x110F3;
 
-class context : public gsc::context
+struct context : public gsc::context
 {
 public:
-    context();
+    context(gsc::instance inst);
 };
 
 } // namespace xsk::gsc::s4

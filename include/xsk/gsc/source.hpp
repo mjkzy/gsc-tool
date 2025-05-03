@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -10,14 +10,15 @@
 namespace xsk::gsc
 {
 
-class source
+struct source
 {
+private:
     context* ctx_;
     std::vector<u8> buf_;
-    u32 indent_;
+    u32 indent_ = 0;
 
 public:
-    source(context* ctx);
+    explicit source(context* ctx);
     auto parse_assembly(buffer const& data) -> assembly::ptr;
     auto parse_assembly(std::vector<u8> const& data) -> assembly::ptr;
     auto parse_assembly(u8 const* data, usize size) -> assembly::ptr;

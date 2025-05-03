@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -391,9 +391,10 @@ struct expr_animation : public expr
 {
     using ptr = std::unique_ptr<expr_animation>;
 
+    std::string space;
     std::string value;
 
-    expr_animation(location const& loc, std::string const& value);
+    expr_animation(location const& loc, std::string const& space, std::string const& value);
     friend auto operator==(expr_animation const& lhs, expr_animation const& rhs) -> bool;
     XSK_ARC_AST_MAKE(expr_animation)
 };

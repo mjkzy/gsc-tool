@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -8,11 +8,11 @@
 namespace xsk::arc
 {
 
-class position
+struct position
 {
 public:
     typedef const std::string filename_type;
-    typedef u16 counter_type;
+    typedef i32 counter_type;
 
     filename_type *filename;
     counter_type line;
@@ -78,7 +78,7 @@ std::basic_ostream<T>& operator<<(std::basic_ostream<T> &ostr, const position &p
     return ostr << pos.line << '.' << pos.column;
 }
 
-class location
+struct location
 {
 public:
     typedef position::filename_type filename_type;

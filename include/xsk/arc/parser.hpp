@@ -52,7 +52,7 @@
 #pragma warning(disable:4127)
 #endif
 #include "context.hpp"
-namespace xsk::arc { class preprocessor; }
+namespace xsk::arc { struct preprocessor; }
 
 #line 58 "parser.hpp"
 
@@ -5482,7 +5482,7 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 3307,     ///< Last index in yytable_.
+      yylast_ = 3337,     ///< Last index in yytable_.
       yynnts_ = 102,  ///< Number of nonterminal symbols.
       yyfinal_ = 28 ///< Termination state number.
     };

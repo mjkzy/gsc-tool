@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -15,12 +15,12 @@
 namespace xsk::arc
 {
 
-class context
+struct context
 {
 public:
     using fs_callback = std::function<std::vector<u8>(std::string const&)>;
 
-    context(props props, engine engine, endian endian, system system, u64 magic);
+    context(props props, engine engine, endian endian, system system, instance inst, u64 magic);
 
     auto props() const -> props { return props_; }
     auto build() const -> build { return build_; }
@@ -34,6 +34,9 @@ public:
     auto disassembler() -> disassembler& { return disassembler_; }
     auto compiler() -> compiler& { return compiler_; }
     auto decompiler() -> decompiler& { return decompiler_; }
+
+    auto fixup(bool value) -> void { fixup_ = value; }
+    auto fixup() const -> bool { return fixup_; }
 
     auto init(arc::build build, fs_callback callback) -> void;
     auto cleanup() -> void;
@@ -62,6 +65,7 @@ protected:
     arc::disassembler disassembler_;
     arc::compiler compiler_;
     arc::decompiler decompiler_;
+    bool fixup_{ false };
 
     fs_callback fs_callback_;
     std::unordered_map<opcode, std::string_view> opcode_map_;

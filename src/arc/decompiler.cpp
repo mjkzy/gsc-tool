@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -46,7 +46,7 @@ auto decompiler::decompile_function(function const& func) -> void
     locs_ = {};
     stack_ = {};
 
-    auto loc = location{ nullptr, static_cast<location::counter_type>(func.index) };
+    auto loc = location{ nullptr, static_cast<i32>(func.index) };
     auto space = expr_identifier::make(loc, func.space);
     auto name = expr_identifier::make(loc, func.name);
     auto prms = expr_parameters::make(loc);
@@ -105,7 +105,7 @@ auto decompiler::decompile_instruction(instruction const& inst, bool last) -> vo
 {
     decompile_expressions(inst);
 
-    auto loc = location{ nullptr, static_cast<location::counter_type>(inst.index) };
+    auto loc = location{ nullptr, static_cast<i32>(inst.index) };
 
     switch (inst.opcode)
     {
@@ -241,23 +241,40 @@ auto decompiler::decompile_instruction(instruction const& inst, bool last) -> vo
         case opcode::OP_GetAnimation:
         {
             auto found = false;
+            auto space = ""s;
 
             for (auto i = program_->declarations.rbegin(); i != program_->declarations.rend(); i++)
             {
                 if ((*i)->is<decl_usingtree>())
                 {
                     found = (*i)->as<decl_usingtree>().name->value == inst.data[0];
+                    space = (*i)->as<decl_usingtree>().name->value;
                     break;
                 }
             }
 
             if (!found)
             {
-                auto dec = decl_usingtree::make(loc, expr_string::make(loc, inst.data[0]));
-                program_->declarations.push_back(std::move(dec));
+                if (space == "")
+                {
+                    auto dec = decl_usingtree::make(loc, expr_string::make(loc, inst.data[0]));
+                    program_->declarations.push_back(std::move(dec));
+                    stack_.push(expr_animation::make(loc, "", inst.data[1]));
+                }
+                else
+                {
+                    stack_.push(expr_animation::make(loc, inst.data[0], inst.data[1]));
+                }
+            }
+            else if (space == inst.data[0])
+            {
+                stack_.push(expr_animation::make(loc, "", inst.data[1]));
+            }
+            else
+            {
+                stack_.push(expr_animation::make(loc, inst.data[0], inst.data[1]));
             }
 
-            stack_.push(expr_animation::make(loc, inst.data[1]));
             break;
         }
         case opcode::OP_GetFunction:
@@ -287,8 +304,23 @@ auto decompiler::decompile_instruction(instruction const& inst, bool last) -> vo
         }
         case opcode::OP_EvalLocalVariableCached:
         {
-            stack_.push(expr_identifier::make(loc, locals_.at(std::stoi(inst.data[0]))));
-            break;
+            if (!ctx_->fixup())
+            {
+                stack_.push(expr_identifier::make(loc, locals_.at(std::stoi(inst.data[0]))));
+                break;
+            }
+            else // fix old compiler bug
+            {
+                try
+                {
+                    stack_.push(expr_identifier::make(loc, locals_.at(std::stoi(inst.data[0]))));
+                }
+                catch (const std::exception&)
+                {
+                    stack_.push(expr_identifier::make(loc, "broken_code!!"));
+                }
+                break;
+            }
         }
         case opcode::OP_EvalArray:
         {
@@ -607,7 +639,7 @@ auto decompiler::decompile_instruction(instruction const& inst, bool last) -> vo
             if (stack_.top()->kind() != node::expr_new)
             {
                 auto exp = node::as<expr>(std::move(stack_.top())); stack_.pop();
-                func_->body->block->list.push_back(stmt_expr::make(exp->loc(), std::move(exp)));  
+                func_->body->block->list.push_back(stmt_expr::make(exp->loc(), std::move(exp)));
             }
 
             break;
@@ -1245,7 +1277,7 @@ auto decompiler::decompile_infinites(stmt_list& stm) -> void
                 i = static_cast<i32>(stm.list.size());
             }
         }
-    } 
+    }
 }
 
 auto decompiler::decompile_loops(stmt_list& stm) -> void
@@ -1364,7 +1396,15 @@ auto decompiler::decompile_ifelses(stmt_list& stm) -> void
                 }
                 else
                 {
-                    decompile_ifelse(stm, i, j);
+                    // fix treyarch compiler bug: breaks outside loops or switches
+                    auto out_of_scope = stm.list.at(stm.list.size() - 1)->loc().begin.line < std::stol(stm.list.at(j)->as<stmt_jmp>().value.substr(4), 0, 16);
+
+                    if (locs_.brk == "" && out_of_scope)
+                        decompile_if(stm, i, j);
+                    else
+                        decompile_ifelse(stm, i, j);
+
+                    //decompile_ifelse(stm, i, j);
                 }
             }
             else
@@ -1396,23 +1436,30 @@ auto decompiler::decompile_aborts(stmt_list& stm) -> void
             }
             else
             {
-                // fix for treyarch compiler bug: nested switch break locs are not preserved
-                if (jmp != locs_.end)
+                // fix treyarch compiler bug: breaks outside loops or switches
+                if (locs_.brk == "")
                 {
-                    auto j = find_location_index(stm, jmp);
-
-                    if (stm.list.at(j)->is<stmt_break>())
-                    {
-                        stm.list.erase(stm.list.begin() + i);
-                        stm.list.insert(stm.list.begin() + i, stmt_break::make(loc));
-
-                        continue;
-                    }
+                    stm.list.erase(stm.list.begin() + i);
+                    stm.list.insert(stm.list.begin() + i, stmt_break::make(loc));
                 }
+                // fix treyarch compiler bug: nested switch break locs are not preserved
+                else if (jmp != locs_.end && stm.list.at(find_location_index(stm, jmp))->is<stmt_break>())
+                {
+                    stm.list.erase(stm.list.begin() + i);
+                    stm.list.insert(stm.list.begin() + i, stmt_break::make(loc));
+                    continue;
+                }
+                else if (locs_.is_switch && stm.list.at(stm.list.size() - 1)->is<stmt_switch>())
+                {
+                    stm.list.erase(stm.list.begin() + i);
+                    stm.list.insert(stm.list.begin() + i, stmt_break::make(loc));
+                    continue;
+                }
+
                 std::cout << "WARNING: unresolved jump to '" + jmp + "', maybe incomplete for loop\n";
             }
         }
-    }  
+    }
 }
 
 auto decompiler::decompile_devblocks(stmt_list& stm) -> void
@@ -1462,7 +1509,9 @@ auto decompiler::decompile_devblocks(stmt_list& stm) -> void
 
                 if (st->as<stmt_expr>().value->is<expr_call>() && st->as<stmt_expr>().value->as<expr_call>().value->is<expr_function>())
                 {
-                    if (st->as<stmt_expr>().value->as<expr_call>().value->as<expr_function>().name->value == "assert")
+                    auto func = st->as<stmt_expr>().value->as<expr_call>().value->as<expr_function>().name->value;
+
+                    if (func == "assert" || func == "assertmsg")
                     {
                         stm.list.insert(stm.list.begin() + i, std::move(list_stmt->list.at(0)));
                         continue;
@@ -1548,7 +1597,7 @@ auto decompiler::decompile_inf(stmt_list& stm, usize begin, usize end) -> void
     auto save = locs_;
     locs_.brk = last_location_index(stm, end) ? locs_.end : stm.list[end + 1]->label();
     locs_.end = stm.list[end]->label();
-    locs_.cnt = stm.list[end]->label();
+    locs_.cnt = stm.list[ctx_->fixup() ? begin : end]->label(); // fix old compiler bug
 
     auto loc = stm.list[begin]->loc();
 
@@ -1771,7 +1820,7 @@ auto decompiler::decompile_foreach(stmt_list& stm, usize begin, usize end) -> vo
 
     if (ctx_->props() & props::foreach)
         stm.list.erase(stm.list.begin() + begin);
-    
+
     stm.list.erase(stm.list.begin() + end);
     stm.list.erase(stm.list.begin() + end);
 
@@ -1797,43 +1846,40 @@ auto decompiler::decompile_switch(stmt_list& stm, usize begin, usize end) -> voi
 {
     auto const& data = stm.list[end]->as<stmt_jmp_endswitch>().data;
     auto const count = std::stoul(data[0]);
+    auto index = 1u;
 
-    if (count)
+    for (auto i = 0u; i < count; i++)
     {
-        auto type = static_cast<switch_type>(std::stoul(data.back()));
-        auto index = 1u;
-
-        for (auto i = 0u; i < count; i++)
+        if (data[index] == "case")
         {
-            if (data[index] == "case")
-            {
-                auto j = find_location_index(stm, data[index + 2]);
-                auto loc = stm.list[j]->loc();
-                auto exp = (type == switch_type::integer) ? expr::ptr{ expr_integer::make(loc, data[index + 1]) } : expr::ptr{ expr_string::make(loc, data[index + 1]) };
-                while (stm.list[j]->is<stmt_case>()) j++;
-                stm.list.insert(stm.list.begin() + j, stmt_case::make(loc, std::move(exp), stmt_list::make(loc)));
-                index += 3;
-            }
-            else if (data[index] == "default")
-            {
-                auto j = find_location_index(stm, data[index + 1]);
-                auto loc = stm.list[j]->loc();
-                while (stm.list[j]->is<stmt_case>()) j++;
-                stm.list.insert(stm.list.begin() + j, stmt_default::make(loc, stmt_list::make(loc)));
-                index += 2;
-            }
-            else
-            {
-                decomp_error("malformed endswitch statement");
-            }
+            auto type = static_cast<switch_type>(std::stoul(data[index + 1]));
+            auto pos = find_location_index(stm, data[index + 3]);
+            auto loc = stm.list[pos]->loc();
+            auto exp = (type == switch_type::integer) ? expr::ptr{ expr_integer::make(loc, data[index + 2]) } : expr::ptr{ expr_string::make(loc, data[index + 2]) };
+            while (stm.list[pos]->is<stmt_case>()) pos++;
+            stm.list.insert(stm.list.begin() + pos, stmt_case::make(loc, std::move(exp), stmt_list::make(loc)));
+            index += 4;
         }
-
-        end += count;
+        else if (data[index] == "default")
+        {
+            auto pos = find_location_index(stm, data[index + 1]);
+            auto loc = stm.list[pos]->loc();
+            while (stm.list[pos]->is<stmt_case>()) pos++;
+            stm.list.insert(stm.list.begin() + pos, stmt_default::make(loc, stmt_list::make(loc)));
+            index += 2;
+        }
+        else
+        {
+            decomp_error("malformed endswitch statement");
+        }
     }
+
+    end += count;
 
     auto save = locs_;
     locs_.brk = last_location_index(stm, end) ? locs_.end : stm.list[end + 1]->label();
     locs_.end = stm.list[begin]->as<stmt_jmp_switch>().value;
+    locs_.is_switch = true;
 
     auto loc = stm.list[begin]->loc();
     auto test = std::move(stm.list[begin]->as<stmt_jmp_switch>().test);
@@ -1982,7 +2028,7 @@ auto decompiler::lvalues_match(stmt_expr const& stm1, stmt_expr const& stm2) -> 
     return false;
 }
 
-auto decompiler::resolve_label(std::string const& name) -> u32
+auto decompiler::resolve_label(std::string const& name) const -> usize
 {
     for (auto const& entry : labels_)
     {
@@ -2251,7 +2297,7 @@ auto decompiler::process_stmt_foreach(stmt_foreach& stm) -> void
         if (it != vars_.end())
             vars_.erase(it);
         else
-            stm.use_key = true;  
+            stm.use_key = true;
     }
 
     if (stm.body->as<stmt_comp>().block->list.size() == 1 && !stm.body->as<stmt_comp>().block->list[0]->is_special_stmt_dev())
@@ -2406,7 +2452,7 @@ auto decompiler::process_expr_assign(expr_assign::ptr& exp) -> void
 
     if (exp->oper != expr_assign::op::eq)
         return;
-    
+
     if (exp->rvalue->kind() != node::expr_binary)
         return;
 
@@ -2598,13 +2644,13 @@ auto decompiler::process_expr_parameters(expr_parameters& exp) -> void
 
         if (!stmt->as<stmt_if>().body->is<stmt_expr>() || !stmt->as<stmt_if>().body->as<stmt_expr>().value->is<expr_assign>())
             return;
-        
+
         if (stmt->as<stmt_if>().body->as<stmt_expr>().value->as<expr_assign>().oper != expr_assign::op::eq)
             return;
 
         if (test->as<expr_isdefined>().value != stmt->as<stmt_if>().body->as<stmt_expr>().value->as<expr_assign>().lvalue)
             return;
-        
+
         auto index = 0u;
 
         for (auto& entry : exp.list)
@@ -2668,7 +2714,7 @@ auto decompiler::process_expr_vector(expr_vector& exp) -> void
 auto decompiler::process_expr_identifier(expr_identifier& exp) -> void
 {
     auto const it = vars_.find(exp.value);
-    if (it != vars_.end()) vars_.erase(it);     
+    if (it != vars_.end()) vars_.erase(it);
 }
 
 } // namespace xsk::arc

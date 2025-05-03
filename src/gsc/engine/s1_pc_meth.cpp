@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -771,7 +771,7 @@ extern std::array<std::pair<u16, char const*>, meth_count> const meth_list
     { 0x82F6, "setweaponammoclip" },
     { 0x82F7, "setweaponammostock" },
     { 0x82F8, "getweaponammoclip" },
-    { 0x82F9, "setweaponammostock" },
+    { 0x82F9, "getweaponammostock" },
     { 0x82FA, "anyammoforweaponmodes" },
     { 0x82FB, "setclientomnvar" },
     { 0x82FC, "setclientdvar" },

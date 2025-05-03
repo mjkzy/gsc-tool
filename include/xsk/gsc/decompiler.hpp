@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -10,12 +10,13 @@
 namespace xsk::gsc
 {
 
-class decompiler
+struct decompiler
 {
+private:
     context const* ctx_;
     program::ptr program_;
     decl_function::ptr func_;
-    std::unordered_map<u32, std::string> labels_;
+    std::unordered_map<usize, std::string> labels_;
     std::vector<std::string> expr_labels_;
     std::vector<std::string> tern_labels_;
     std::stack<node::ptr> stack_;
@@ -23,7 +24,7 @@ class decompiler
     locjmp locs_;
 
 public:
-    decompiler(context const* ctx);
+    explicit decompiler(context const* ctx);
     auto decompile(assembly const& data) -> program::ptr;
 
 private:

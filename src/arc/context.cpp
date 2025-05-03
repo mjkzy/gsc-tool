@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -11,8 +11,8 @@ namespace xsk::arc
 
 extern std::array<std::pair<opcode, std::string_view>, opcode_count> const opcode_list;
 
-context::context(arc::props props, arc::engine engine, arc::endian endian, arc::system system, u64 magic)
-    : props_{ props }, engine_{ engine }, endian_{ endian }, system_{ system }, instance_{ arc::instance::server }, magic_{ magic },
+context::context(arc::props props, arc::engine engine, arc::endian endian, arc::system system, arc::instance inst, u64 magic)
+    : props_{ props }, engine_{ engine }, endian_{ endian }, system_{ system }, instance_{ inst }, magic_{ magic },
       source_{ this }, assembler_{ this }, disassembler_{ this }, compiler_{ this }, decompiler_{ this }
 {
     opcode_map_.reserve(opcode_list.size());
@@ -33,6 +33,7 @@ auto context::init(arc::build build, fs_callback callback) -> void
 
 auto context::cleanup() -> void
 {
+    header_files_.clear();
 }
 
 auto context::engine_name() const -> std::string_view
@@ -267,15 +268,15 @@ auto context::hash_id(std::string const& name) const -> u32
 
     if (props_ & props::hashids)
     {
-		auto* str = name.data();
-		auto hash = 16777619u * (std::tolower(static_cast<u8>(*str)) ^ 1268436527u);
+        auto* str = name.data();
+        auto hash = 16777619u * (std::tolower(static_cast<u8>(*str)) ^ 1268436527u);
 
-		while (*str++)
-		{
-			hash = 16777619u * (std::tolower(static_cast<u8>(*str)) ^ hash);
-		}
+        while (*str++)
+        {
+            hash = 16777619u * (std::tolower(static_cast<u8>(*str)) ^ hash);
+        }
 
-		return hash;
+        return hash;
     }
     else
     {

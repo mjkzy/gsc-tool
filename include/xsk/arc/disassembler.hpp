@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -11,18 +11,19 @@
 namespace xsk::arc
 {
 
-class disassembler
+struct disassembler
 {
+private:
     context const* ctx_;
     function::ptr func_;
     assembly::ptr assembly_;
     utils::reader script_;
-    std::map<u32, import_ref::ptr> import_refs_;
-    std::map<u32, string_ref::ptr> string_refs_;
-    std::map<u32, animtree_ref::ptr> anim_refs_;
+    std::map<usize, import_ref::ptr> import_refs_;
+    std::map<usize, string_ref::ptr> string_refs_;
+    std::map<usize, animtree_ref::ptr> anim_refs_;
 
 public:
-    disassembler(context const* ctx);
+    explicit disassembler(context const* ctx);
     auto disassemble(buffer const& data) -> assembly::ptr;
     auto disassemble(std::vector<u8> const& data) -> assembly::ptr;
     auto disassemble(u8 const* data, usize data_size) -> assembly::ptr;

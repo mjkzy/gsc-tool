@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -15,12 +15,12 @@
 namespace xsk::gsc
 {
 
-class context
+struct context
 {
 public:
     using fs_callback = std::function<std::pair<buffer, std::vector<u8>>(context const*, std::string const&)>;
 
-    context(props props, engine engine, endian endian, system system, u32 str_count);
+    context(props props, engine engine, endian endian, system system, instance inst, u32 str_count);
 
     auto props() const -> props { return props_; }
 
@@ -55,7 +55,7 @@ public:
 
     auto engine_name() const -> std::string_view;
 
-    auto opcode_size(opcode op) const -> u32;
+    auto opcode_size(opcode op) const -> usize;
 
     auto opcode_id(opcode op) const -> u8;
 

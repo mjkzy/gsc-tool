@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -10,8 +10,9 @@
 namespace xsk::gsc
 {
 
-class lexer
+struct lexer
 {
+private:
     context const* ctx_;
     lookahead reader_;
     location loc_;

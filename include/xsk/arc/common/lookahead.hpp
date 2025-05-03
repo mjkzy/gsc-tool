@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -17,7 +17,7 @@ struct lookahead
 
     lookahead(char const* data, usize size);
     auto advance() -> void;
-    auto ended() { return available == 0; };
+    auto ended() const { return available == 0; };
 };
 
 } // namespace xsk::arc

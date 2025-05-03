@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -69,7 +69,7 @@ auto token::to_string() -> std::string
         case token::STRING: return data;
         case token::ISTRING: return data;
         case token::INT: return data;
-        case token::FLT: return data;   
+        case token::FLT: return data;
         case token::DEVBEGIN: return "/#";
         case token::DEVEND: return "#/";
         case token::INLINE: return "#inline";

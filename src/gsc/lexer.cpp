@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -84,6 +84,8 @@ auto lexer::lex() -> token
                     }
                     else
                     {
+                        auto first = true;
+
                         while (true)
                         {
                             if (reader_.ended())
@@ -94,18 +96,21 @@ auto lexer::lex() -> token
                                 loc_.lines();
                                 loc_.step();
                             }
-                            else if (last == '#' && curr == '/')
+                            else if (last == '#' && curr == '/' && !first)
                             {
                                 advance();
                                 break;
                             }
 
                             advance();
+                            first = false;
                         }
                     }
                 }
                 else if (last == '@')
                 {
+                    auto first = true;
+
                     while (true)
                     {
                         if (reader_.ended())
@@ -116,17 +121,20 @@ auto lexer::lex() -> token
                             loc_.lines();
                             loc_.step();
                         }
-                        else if (last == '@' && curr == '/')
+                        else if (last == '@' && curr == '/' && !first)
                         {
                             advance();
                             break;
                         }
 
                         advance();
+                        first = false;
                     }
                 }
                 else if (last == '*')
                 {
+                    auto first = true;
+
                     while (true)
                     {
                         if (reader_.ended())
@@ -137,13 +145,14 @@ auto lexer::lex() -> token
                             loc_.lines();
                             loc_.step();
                         }
-                        else if (last  == '*' && curr == '/')
+                        else if (last  == '*' && curr == '/' && !first)
                         {
                             advance();
                             break;
                         }
 
                         advance();
+                        first = false;
                     }
                 }
                 else if (last == '/')
@@ -191,7 +200,7 @@ auto lexer::lex() -> token
 
                     if (curr != '.')
                         return token{ token::DOUBLEDOT, spacing_, loc_ };
- 
+
                     advance();
                     return token{ token::ELLIPSIS, spacing_, loc_ };
                 }
@@ -418,16 +427,17 @@ lex_number:
 
             auto dot = last == '.' ? 1 : 0;
             auto flt = 0;
+            auto exp = 0;
 
             while (true)
             {
                 if (reader_.ended())
                     break;
 
-                if (curr == '\'' && (last == '\'' || last == 'f' || last == '.'))
+                if (curr == '\'' && (last == '\'' || last == 'f' || last == '.' || last == 'e' || last == 'E'))
                     throw comp_error(loc_, "invalid number literal");
 
-                if ((curr == '.' || curr == 'f') && last == '\'')
+                if ((curr == '.' || curr == 'f' || curr == 'e' || curr == 'E') && last == '\'')
                     throw comp_error(loc_, "invalid number literal");
 
                 if (curr == '\'')
@@ -440,6 +450,22 @@ lex_number:
                     flt++;
                 else if (curr == '.')
                     dot++;
+                else if (curr == 'e' || curr == 'E')
+                {
+                    exp++;
+                    if (exp > 1)
+                        throw comp_error(loc_, "invalid number literal");
+                    push(curr);
+                    advance();
+
+                    // TODO: check stream end
+                    if (curr == '+' || curr == '-')
+                    {
+                        push(curr);
+                        advance();
+                    }
+                    continue;
+                }
                 else if (!(curr > 47 && curr < 58))
                     break;
 
@@ -453,7 +479,8 @@ lex_number:
             if (dot > 1 || flt > 1 || (flt && buffer_[buflen_ - 1] != 'f'))
                 throw comp_error(loc_, "invalid number literal");
 
-            if (dot || flt)
+            // TODO: exp can be int or float
+            if (dot || flt || exp)
                 return token{ token::FLT, spacing_, loc_, std::string{ &buffer_[0], buflen_ } };
 
             return token{ token::INT, spacing_, loc_, std::string{ &buffer_[0], buflen_ } };

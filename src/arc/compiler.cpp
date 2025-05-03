@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -128,7 +128,7 @@ auto compiler::emit_decl_function(decl_function const& func) -> void
     emit_expr_parameters(*func.params);
     emit_stmt_comp(*func.body);
 
-    if (scopes_.back().abort == scope::abort_none)
+    if (scopes_.back().abort == scope::abort_none || function_->labels.find(index_) != function_->labels.end())
         emit_opcode(opcode::OP_End);
 
     scopes_.pop_back();
@@ -571,8 +571,7 @@ auto compiler::emit_stmt_switch(stmt_switch const& stm) -> void
 
     auto data = std::vector<std::string>{};
     data.push_back(std::format("{}", stm.body->block->list.size()));
-    
-    auto type = switch_type::none;
+
     auto loc_default = std::string{};
     auto has_default = false;
 
@@ -586,25 +585,13 @@ auto compiler::emit_stmt_switch(stmt_switch const& stm) -> void
 
             if (entry->as<stmt_case>().value->is<expr_integer>())
             {
-                if (type == switch_type::string)
-                {
-                    throw comp_error(entry->loc(), "switch cases with different types");
-                }
-
-                type = switch_type::integer;
-                
+                data.push_back(std::format("{}", static_cast<i32>(switch_type::integer)));
                 data.push_back(entry->as<stmt_case>().value->as<expr_integer>().value);
                 data.push_back(insert_label());
             }
             else if (entry->as<stmt_case>().value->is<expr_string>())
             {
-                if (type == switch_type::integer)
-                {
-                    throw comp_error(entry->loc(), "switch cases with different types");
-                }
-
-                type = switch_type::string;
-
+                data.push_back(std::format("{}", static_cast<i32>(switch_type::string)));
                 data.push_back(entry->as<stmt_case>().value->as<expr_string>().value);
                 data.push_back(insert_label());
             }
@@ -640,8 +627,6 @@ auto compiler::emit_stmt_switch(stmt_switch const& stm) -> void
         data.push_back(loc_default);
     }
 
-    data.push_back(std::format("{}", static_cast<std::underlying_type_t<switch_type>>(type)));
-
     insert_label(table_loc);
     emit_opcode(opcode::OP_EndSwitch, data);
     insert_label(break_loc);
@@ -661,19 +646,23 @@ auto compiler::emit_stmt_default(stmt_default const& stm) -> void
 
 auto compiler::emit_stmt_break(stmt_break const& stm) -> void
 {
-    if (!can_break_ || scopes_.back().abort != scope::abort_none || scopes_.back().brk == "")
+    if (!can_break_ /*|| scopes_.back().abort != scope::abort_none*/ || scopes_.back().brk == "")
         throw comp_error(stm.loc(), "illegal break statement");
 
-    scopes_.back().abort = scope::abort_break;
+    if (scopes_.back().abort == scope::abort_none)
+        scopes_.back().abort = scope::abort_break;
+
     emit_opcode(opcode::OP_Jump, scopes_.back().brk);
 }
 
 auto compiler::emit_stmt_continue(stmt_continue const& stm) -> void
 {
-    if (!can_continue_ || scopes_.back().abort != scope::abort_none || scopes_.back().cnt == "")
+    if (!can_continue_ /*|| scopes_.back().abort != scope::abort_none*/ || scopes_.back().cnt == "")
         throw comp_error(stm.loc(), "illegal continue statement");
 
-    scopes_.back().abort = scope::abort_continue;
+    if (scopes_.back().abort == scope::abort_none)
+        scopes_.back().abort = scope::abort_continue;
+
     emit_opcode(opcode::OP_Jump, scopes_.back().cnt);
 }
 
@@ -1086,7 +1075,7 @@ auto compiler::emit_expr_binary(expr_binary const& exp) -> void
                 break;
             default:
                 throw comp_error(exp.loc(), "unknown binary expression");
-        }       
+        }
     }
 }
 
@@ -1167,7 +1156,7 @@ auto compiler::emit_expr_call_function(expr_function const& exp, bool is_stmt) -
     bool as_dev = false;
     std::string end;
 
-    if (!developer_thread_ && is_stmt && exp.name->value == "assert")
+    if (!developer_thread_ && is_stmt && (exp.name->value == "assert" || exp.name->value == "assertmsg"))
     {
         as_dev = true;
         developer_thread_ = true;
@@ -1728,7 +1717,7 @@ auto compiler::emit_expr_vector(expr_vector const& exp) -> void
         auto value = std::stof(exp.x->as<expr_float>().value.data());
         data.push_back(exp.x->as<expr_float>().value);
 
-        if (value != 1.0 && value != -1.0 && value != 0.0)        
+        if (value != 1.0 && value != -1.0 && value != 0.0)
             isconst = false;
         else
             flags |= (value == 1.0) ? 0x20 : (value == -1.0) ? 0x10 : 0;
@@ -1804,12 +1793,15 @@ auto compiler::emit_expr_vector(expr_vector const& exp) -> void
 
 auto compiler::emit_expr_animation(expr_animation const& exp) -> void
 {
-    if (animtree_.empty())
+    if (exp.space == "" && animtree_.empty())
     {
         throw comp_error(exp.loc(), "trying to use animation without specified using animtree");
     }
 
-    emit_opcode(opcode::OP_GetAnimation, { animtree_, exp.value });
+    if (exp.space != "")
+        emit_opcode(opcode::OP_GetAnimation, { exp.space, exp.value });
+    else
+        emit_opcode(opcode::OP_GetAnimation, { animtree_, exp.value });
 }
 
 auto compiler::emit_expr_animtree(expr_animtree const& exp) -> void

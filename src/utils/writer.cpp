@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -9,21 +9,19 @@
 namespace xsk::utils
 {
 
-writer::writer(bool swap) : size_{ 0x100000 }, pos_{ 0 }, swap_{ swap }
+writer::writer(bool swap) : size_{ default_size }, swap_{ swap }
 {
-    data_ = reinterpret_cast<u8*>(std::malloc(size_));
-    std::memset(data_, 0, size_);
+    data_ = new u8[size_]();
 }
 
-writer::writer(u32 size, bool swap) : size_{ size }, pos_{ 0 }, swap_{ swap }
+writer::writer(usize size, bool swap) : size_{ size }, swap_{ swap }
 {
-    data_ = reinterpret_cast<u8*>(std::malloc(size_));
-    std::memset(data_, 0, size_);
+    data_ = new u8[size_]();
 }
 
 writer::~writer()
 {
-    std::free(reinterpret_cast<void*>(data_));
+    delete[] data_;
 }
 
 auto writer::clear() -> void
@@ -35,7 +33,7 @@ auto writer::clear() -> void
 template<> auto writer::write(i8 data) -> void
 {
     if (pos_ + 1 > size_)
-        throw std::runtime_error("writer: out of bounds");
+        throw error("writer: out of bounds");
 
     *reinterpret_cast<i8*>(data_ + pos_) = data;
     pos_ += 1;
@@ -44,7 +42,7 @@ template<> auto writer::write(i8 data) -> void
 template<> auto writer::write(u8 data) -> void
 {
     if (pos_ + 1 > size_)
-        throw std::runtime_error("writer: out of bounds");
+        throw error("writer: out of bounds");
 
     *reinterpret_cast<u8*>(data_ + pos_) = data;
     pos_ += 1;
@@ -53,7 +51,7 @@ template<> auto writer::write(u8 data) -> void
 template<> auto writer::write(i16 data) -> void
 {
     if (pos_ + 2 > size_)
-        throw std::runtime_error("writer: out of bounds");
+        throw error("writer: out of bounds");
 
     if (!swap_)
     {
@@ -71,7 +69,7 @@ template<> auto writer::write(i16 data) -> void
 template<> auto writer::write(u16 data) -> void
 {
     if (pos_ + 2 > size_)
-        throw std::runtime_error("writer: out of bounds");
+        throw error("writer: out of bounds");
 
     if (!swap_)
     {
@@ -89,7 +87,7 @@ template<> auto writer::write(u16 data) -> void
 template<> auto writer::write(i32 data) -> void
 {
     if (pos_ + 4 > size_)
-        throw std::runtime_error("writer: out of bounds");
+        throw error("writer: out of bounds");
 
     if (!swap_)
     {
@@ -109,7 +107,7 @@ template<> auto writer::write(i32 data) -> void
 template<> auto writer::write(u32 data) -> void
 {
     if (pos_ + 4 > size_)
-        throw std::runtime_error("writer: out of bounds");
+        throw error("writer: out of bounds");
 
     if (!swap_)
     {
@@ -129,7 +127,7 @@ template<> auto writer::write(u32 data) -> void
 template<> auto writer::write(i64 data) -> void
 {
     if (pos_ + 8 > size_)
-        throw std::runtime_error("writer: out of bounds");
+        throw error("writer: out of bounds");
 
     if (!swap_)
     {
@@ -153,7 +151,7 @@ template<> auto writer::write(i64 data) -> void
 template<> auto writer::write(u64 data) -> void
 {
     if (pos_ + 8 > size_)
-        throw std::runtime_error("writer: out of bounds");
+        throw error("writer: out of bounds");
 
     if (!swap_)
     {
@@ -177,7 +175,7 @@ template<> auto writer::write(u64 data) -> void
 template<> auto writer::write(f32 data) -> void
 {
     if (pos_ + 4 > size_)
-        throw std::runtime_error("writer: out of bounds");
+        throw error("writer: out of bounds");
 
     if (!swap_)
     {
@@ -194,40 +192,59 @@ template<> auto writer::write(f32 data) -> void
     pos_ += 4;
 }
 
+auto writer::write_i24(i32 data) -> void
+{
+    if (pos_ + 3 > size_)
+        throw error("writer: out of bounds");
+
+    if (!swap_)
+    {
+        *reinterpret_cast<i32*>(data_ + pos_) = data & 0xFFFFFF;
+    }
+    else
+    {
+        (data_ + pos_)[0] = reinterpret_cast<u8*>(&data)[2];
+        (data_ + pos_)[1] = reinterpret_cast<u8*>(&data)[1];
+        (data_ + pos_)[2] = reinterpret_cast<u8*>(&data)[0];
+    }
+
+    pos_ += 3;
+}
+
 auto writer::write_string(std::string const& data) -> void
 {
     if (pos_ + data.size() > size_)
-        throw std::runtime_error("writer: out of bounds");
+        throw error("writer: out of bounds");
 
     std::memcpy(reinterpret_cast<void*>(data_ + pos_), data.data(), data.size());
-    pos_ += static_cast<u32>(data.size());
+    pos_ += data.size();
 }
 
 auto writer::write_cstr(std::string const& data) -> void
 {
     if (pos_ + data.size() >= size_)
-        throw std::runtime_error("writer: out of bounds");
+        throw error("writer: out of bounds");
 
     std::memcpy(reinterpret_cast<void*>(data_ + pos_), data.data(), data.size());
-    pos_ += static_cast<u32>(data.size() + 1);
+    pos_ += data.size() + 1;
 }
 
-auto writer::is_avail() -> bool
+auto writer::is_avail() const -> bool
 {
-    return (pos_ < size_) ? true : false;
+    return pos_ < size_;
 }
 
-auto writer::seek(u32 size) -> void
+auto writer::seek(usize size) -> void
 {
     if (pos_ + size <= size_) pos_ += size;
 }
 
-auto writer::seek_neg(u32 size) -> void
+auto writer::seek_neg(usize size) -> void
 {
-    if (pos_ - size >= 0) pos_ -= size;
+    if (pos_ >= size) pos_ -= size;
 }
 
-auto writer::align(u32 size) -> u32
+auto writer::align(usize size) -> usize
 {
     auto pos = pos_;
 
@@ -236,27 +253,24 @@ auto writer::align(u32 size) -> u32
     return pos_ - pos;
 }
 
-auto writer::data() -> const u8*
+auto writer::data() const -> const u8*
 {
     return data_;
 }
 
-auto writer::size() -> u32
+auto writer::size() const -> usize
 {
     return size_;
 }
 
-auto writer::pos() -> u32
+auto writer::pos() const -> usize
 {
     return pos_;
 }
 
-auto writer::pos(u32 pos) -> void
+auto writer::pos(usize pos) -> void
 {
-    if (pos >= 0 && pos <= size_)
-    {
-        pos_ = pos;
-    }
+    if (pos <= size_) pos_ = pos;
 }
 
 } // namespace xsk::utils

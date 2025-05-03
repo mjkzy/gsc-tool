@@ -1,4 +1,4 @@
-// Copyright 2024 xensik. All rights reserved.
+// Copyright 2025 xensik. All rights reserved.
 //
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
@@ -10,8 +10,9 @@
 namespace xsk::gsc
 {
 
-class compiler
+struct compiler
 {
+private:
     context* ctx_;
     assembly::ptr assembly_;
     function::ptr function_;
@@ -23,15 +24,15 @@ class compiler
     std::vector<scope*> continue_blks_;
     std::string animname_;
     sourcepos debug_pos_;
-    u32 index_;
-    u32 label_idx_;
+    usize index_;
+    usize label_idx_;
     bool can_break_;
     bool can_continue_;
     bool developer_thread_;
     bool animload_;
 
 public:
-    compiler(context* ctx);
+    explicit compiler(context* ctx);
     auto compile(program const& data) -> assembly::ptr;
     auto compile(std::string const& file, std::vector<u8>& data) -> assembly::ptr;
 

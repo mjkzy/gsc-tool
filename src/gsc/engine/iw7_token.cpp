@@ -192,7 +192,7 @@ extern std::array<std::pair<u32, char const*>, token_count> const token_list
     { 0x00B3, "codecallback_playermigrated" },
 //  { 0x00B4, "" },
 //  { 0x00B5, "" },
-//  { 0x00B6, "" },
+    { 0x00B6, "codecallback_playerfinishweaponchange" }, // assumed from GSC and IW8
     { 0x00B7, "codecallback_startgametype" },
     { 0x00B8, "codecallback_vehicledamage" }, // AUTOADDED
     { 0x00B9, "color" },

@@ -139,7 +139,7 @@ extern std::array<std::pair<u16, char const*>, func_count> const func_list
     { 0x07F, "getbuildversion" }, // 0x140B53DF0
     { 0x080, "getclientmatchdata" }, // 0x140B58E90
     { 0x081, "getclosestnodeinsight" }, // 0x140AF30E0
-    { 0x082, "_func_082" }, // 0x14049EA10
+    { 0x082, "getcommandforbinding" }, // 0x14049EA10 (unused, manually named based off behavior)
     { 0x083, "getcorpsearray" }, // 0x14049D9E0
     { 0x084, "getcountertotal" }, // 0x140B57530
     { 0x085, "getcsplinecount" }, // 0x140B36CE0
@@ -395,7 +395,7 @@ extern std::array<std::pair<u16, char const*>, func_count> const func_list
     { 0x17F, "precacheitem" }, // 0x140B484A0
     { 0x180, "precacheleaderboards" }, // 0x140B48990
     { 0x181, "precacheminimapicon" }, // 0x140B53970
-    { 0x182, "_func_182" }, // 0x140497070
+    { 0x182, "precacheminimapsentrycodeassets" }, // 0x140497070
     { 0x183, "precachemodel" }, // 0x140B3F7D0
     { 0x184, "precachempanim" }, // 0x140B539E0
     { 0x185, "precachenightvisioncodeassets" }, // 0x140496C40
@@ -630,7 +630,7 @@ extern std::array<std::pair<u16, char const*>, func_count> const func_list
     { 0x26A, "setprintchannel" }, // nullptr
     { 0x26B, "sphere" }, // nullptr
     { 0x26C, "sysprint" }, // 0x140B55130
-    { 0x26D, "_func_26D" }, // 0x140B3EC10
+    { 0x26D, "_func_26D" }, // 0x140B3EC10 (does 1:1 behavior to SpawnHelicopter)
     { 0x26E, "physics_getbodylinvel" }, // 0x1405636A0
     { 0x26F, "physics_getbodyangvel" }, // 0x140563760
     { 0x270, "physics_getbodylinangvel" }, // 0x140563870
@@ -758,11 +758,11 @@ extern std::array<std::pair<u16, char const*>, func_count> const func_list
     { 0x2EA, "loadworldweapons" }, // 0x140B5B060
     { 0x2EB, "clearworldweapons" }, // 0x140B5B130
     { 0x2EC, "anglelerpquatfrac" }, // 0x140B3A430
-    { 0x2ED, "_func_2ED" }, // 0x140B40850
-    { 0x2EE, "_func_2EE" }, // 0x140B40A10
-    { 0x2EF, "_func_2EF" }, // 0x140B41CD0
-    { 0x2F0, "_func_2F0" }, // 0x140B42050
-    { 0x2F1, "_func_2F1" }, // 0x140B35060
+    { 0x2ED, "archetypeassetloaded" }, // 0x140B40850
+    { 0x2EE, "archetypegetalias" }, // 0x140B40A10
+    { 0x2EF, "archetypegetrandomalias" }, // 0x140B41CD0
+    { 0x2F0, "archetypegetaliases" }, // 0x140B42050
+    { 0x2F1, "archetypehasstate" }, // 0x140B35060
     { 0x2F2, "computeweaponclientloadout" }, // 0x140B5B4B0
     { 0x2F3, "target_drawonradar" }, // 0x14040C540
     { 0x2F4, "target_setradarcenter" }, // 0x14040DBB0

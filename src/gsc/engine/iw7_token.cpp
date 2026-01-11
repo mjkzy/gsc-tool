@@ -32471,7 +32471,7 @@ extern std::array<std::pair<u32, char const*>, token_count> const token_list
 //  { 0x7ECA, "" },
     { 0x7ECB, "getfx" },
 //  { 0x7ECC, "" },
-//  { 0x7ECD, "" },
+    { 0x7ECD, "getgamemodeweaponspeed" },
     { 0x7ECE, "getgametypenumlives" },
 //  { 0x7ECF, "" },
     { 0x7ED0, "getgesturedata" },
@@ -32608,7 +32608,7 @@ extern std::array<std::pair<u32, char const*>, token_count> const token_list
 //  { 0x7F53, "" },
 //  { 0x7F54, "" },
     { 0x7F55, "getkillstreakweapon" },
-//  { 0x7F56, "" },
+    { 0x7F56, "getkilltriggerspawnloc" },
     { 0x7F57, "getkothzonedeadzonedist" }, // AUTOADDED
     { 0x7F58, "getlabel" }, // AUTOADDED
     { 0x7F59, "getlabelid" }, // AUTOADDED

@@ -14,7 +14,7 @@
 #include "xsk/gsc/engine/iw6_ps.hpp"
 #include "xsk/gsc/engine/iw6_xb.hpp"
 #include "xsk/gsc/engine/iw7.hpp"
-#include "xsk/gsc/engine/iw8.hpp"
+#include "xsk/gsc/engine/iw8_replay.hpp"
 #include "xsk/gsc/engine/iw9.hpp"
 #include "xsk/gsc/engine/s1_pc.hpp"
 #include "xsk/gsc/engine/s1_ps.hpp"
@@ -40,7 +40,7 @@ namespace xsk
 enum class result : i32 { success = 0, failure = 1 };
 enum class fenc { _, source, assembly, binary, src_bin };
 enum class mode { _, assemble, disassemble, compile, decompile, parse, rename };
-enum class game { _, iw5, iw6, iw7, iw8, iw9, s1, s2, s4, h1, h2, t6, t7, t8, t9 };
+enum class game { _, iw5, iw6, iw7, iw8_replay, iw9, s1, s2, s4, h1, h2, t6, t7, t8, t9 };
 enum class mach { _, pc, ps3, ps4, ps5, xb2, xb3, xb4, wiiu };
 
 std::unordered_map<std::string_view, fenc> const gsc_exts =
@@ -80,7 +80,7 @@ std::unordered_map<std::string_view, game> const games =
     { "iw5", game::iw5 },
     { "iw6", game::iw6 },
     { "iw7", game::iw7 },
-    { "iw8", game::iw8 },
+    { "iw8_replay", game::iw8_replay },
     { "iw9", game::iw9 },
     { "s1", game::s1 },
     { "s2", game::s2 },
@@ -98,7 +98,7 @@ std::map<game, std::string_view> const games_rev =
     { game::iw5, "iw5" },
     { game::iw6, "iw6" },
     { game::iw7, "iw7" },
-    { game::iw8, "iw8" },
+    { game::iw8_replay, "iw8_replay" },
     { game::iw9, "iw9" },
     { game::s1, "s1" },
     { game::s2, "s2" },
@@ -562,16 +562,16 @@ auto init_iw7(mach mach) -> void
     }
 }
 
-auto init_iw8(mach mach) -> void
+auto init_iw8_replay(mach mach) -> void
 {
-    if (contexts[game::iw8].contains(mach)) return;
+    if (contexts[game::iw8_replay].contains(mach)) return;
 
     switch (mach)
     {
         case mach::pc:
         {
-            contexts[game::iw8][mach] = std::make_unique<iw8::context>();
-            contexts[game::iw8][mach]->init(build::prod, fs_read);
+            contexts[game::iw8_replay][mach] = std::make_unique<iw8_replay::context>();
+            contexts[game::iw8_replay][mach]->init(build::prod, fs_read);
             break;
         }
         default:
@@ -712,7 +712,7 @@ auto init(game game, mach mach) -> void
         case game::iw5: init_iw5(mach); break;
         case game::iw6: init_iw6(mach); break;
         case game::iw7: init_iw7(mach); break;
-        case game::iw8: init_iw8(mach); break;
+        case game::iw8_replay: init_iw8_replay(mach); break;
         case game::iw9: init_iw9(mach); break;
         case game::s1:  init_s1(mach);  break;
         case game::s2:  init_s2(mach);  break;
@@ -1096,7 +1096,7 @@ auto usage() -> void
 {
     std::cout << "usage: gsc-tool <mode> <game> <system> <path>\n";
     std::cout << "\t* mode: asm, disasm, comp, decomp, parse, rename\n";
-    std::cout << "\t* game: iw5, iw6, iw7, iw8, iw9, s1, s2, s4, h1, h2, t6, t7, t8, t9\n";
+    std::cout << "\t* game: iw5, iw6, iw7, iw8_replay, iw9, s1, s2, s4, h1, h2, t6, t7, t8, t9\n";
     std::cout << "\t* system: pc, ps3, ps4, ps5, xb2 (360), xb3 (One), xb4 (Series X|S), wiiu\n";
     std::cout << "\t* path: file or directory (recursive)\n";
 }

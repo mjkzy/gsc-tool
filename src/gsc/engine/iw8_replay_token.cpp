@@ -3,9 +3,9 @@
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
 
-#include "xsk/gsc/engine/iw8.hpp"
+#include "xsk/gsc/engine/iw8_replay.hpp"
 
-namespace xsk::gsc::iw8
+namespace xsk::gsc::iw8_replay
 {
 
 extern std::array<std::pair<u32, char const*>, token_count> const token_list
@@ -58061,4 +58061,4 @@ extern std::array<std::pair<u32, char const*>, token_count> const token_list
     { 0xE2C0, "zuluinit" }
 }};
 
-} // namespace xsk::gsc::iw8
+} // namespace xsk::gsc::iw8_replay

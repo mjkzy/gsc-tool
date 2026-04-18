@@ -45,7 +45,7 @@ auto context::engine_name() const -> std::string_view
         case engine::iw5: return "IW5";
         case engine::iw6: return "IW6";
         case engine::iw7: return "IW7";
-        case engine::iw8: return "IW8";
+        case engine::iw8_replay: return "IW8_REPLAY";
         case engine::iw9: return "IW9";
         case engine::s1: return "S1";
         case engine::s2: return "S2";

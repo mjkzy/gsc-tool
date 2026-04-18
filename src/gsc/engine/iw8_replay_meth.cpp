@@ -3,9 +3,9 @@
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
 
-#include "xsk/gsc/engine/iw8.hpp"
+#include "xsk/gsc/engine/iw8_replay.hpp"
 
-namespace xsk::gsc::iw8
+namespace xsk::gsc::iw8_replay
 {
 
 extern std::array<std::pair<u16, char const*>, meth_count> const meth_list
@@ -2044,4 +2044,4 @@ extern std::array<std::pair<u16, char const*>, meth_count> const meth_list
     { 0x87EF, "_meth_87EF" },
 }};
 
-} // namespace xsk::gsc::iw8
+} // namespace xsk::gsc::iw8_replay

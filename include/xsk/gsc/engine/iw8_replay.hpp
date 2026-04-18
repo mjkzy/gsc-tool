@@ -8,7 +8,7 @@
 #include "xsk/stdinc.hpp"
 #include "xsk/gsc/context.hpp"
 
-namespace xsk::gsc::iw8
+namespace xsk::gsc::iw8_replay
 {
 
 constexpr usize code_count = 190;
@@ -23,4 +23,4 @@ public:
     context();
 };
 
-} // namespace xsk::gsc::iw8
+} // namespace xsk::gsc::iw8_replay

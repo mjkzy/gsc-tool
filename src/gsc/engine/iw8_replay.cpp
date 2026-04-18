@@ -3,9 +3,9 @@
 // Use of this source code is governed by a GNU GPLv3 license
 // that can be found in the LICENSE file.
 
-#include "xsk/gsc/engine/iw8.hpp"
+#include "xsk/gsc/engine/iw8_replay.hpp"
 
-namespace xsk::gsc::iw8
+namespace xsk::gsc::iw8_replay
 {
 
 extern std::array<std::pair<u8, opcode>, code_count> const code_list;
@@ -14,7 +14,7 @@ extern std::array<std::pair<u16, char const*>, meth_count> const meth_list;
 extern std::array<std::pair<u32, char const*>, token_count> const token_list;
 
 context::context() : gsc::context(props::str4 | props::tok4 | props::waitframe | props::params | props::boolfuncs | props::boolnotand | props::offs9,
-    engine::iw8, endian::little, system::pc, max_string_id)
+    engine::iw8_replay, endian::little, system::pc, max_string_id)
 {
     code_map_.reserve(code_list.size());
     code_map_rev_.reserve(code_list.size());
@@ -50,4 +50,4 @@ context::context() : gsc::context(props::str4 | props::tok4 | props::waitframe |
     }
 }
 
-} // namespace xsk::gsc::iw8
+} // namespace xsk::gsc::iw8_replay

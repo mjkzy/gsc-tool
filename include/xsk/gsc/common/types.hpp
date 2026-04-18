@@ -51,7 +51,7 @@ enum class engine : u8
     iw5,
     iw6,
     iw7,
-    iw8,
+    iw8_replay,
     iw9,
     s1,
     s2,

@@ -74,6 +74,16 @@ auto preprocessor::process() -> token
             continue;
         }
 
+        if (tok.type == token::AT)
+        {
+            auto next = next_token();
+            if (next.type != token::STRING)
+                throw ppr_error(tok.pos, "'@' must be followed by a string literal (dvar hash literal)");
+
+            next.pos.begin = tok.pos.begin;
+            return token{ token::HASHSTR_DVAR, tok.space, next.pos, next.data };
+        }
+
         if (skip_) continue;
 
         if (tok.type == token::NAME)
@@ -721,8 +731,6 @@ auto preprocessor::read_hashtoken(token& tok) -> void
             return read_hashtoken_animtree(tok, next);
         }
     }
-
-    // TODO: iw9 hash literals #d"src_game"
 
     // if nothing match return '#'
     tokens_.push_front(std::move(next));

@@ -74,6 +74,8 @@ auto preprocessor::process() -> token
             continue;
         }
 
+        if (skip_) continue;
+
         if (tok.type == token::AT)
         {
             auto next = next_token();
@@ -83,8 +85,6 @@ auto preprocessor::process() -> token
             next.pos.begin = tok.pos.begin;
             return token{ token::HASHSTR_DVAR, tok.space, next.pos, next.data };
         }
-
-        if (skip_) continue;
 
         if (tok.type == token::NAME)
         {
